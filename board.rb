@@ -1,4 +1,5 @@
 require_relative 'piece'
+require 'colorize'
 
 class Board
 
@@ -42,10 +43,15 @@ class Board
   end
 
   def render
-    @grid.each do |row|
-      p row.map { |space| space ? space.render : " " }
+    render = @grid.map.with_index do |row, i|
+      row.map.with_index do |space, j|
+        bg_color = (i.even? ^ j.even?) ? :green : :default
+        piece = space ? space.render : " "
+        piece.colorize(background: bg_color)
+      end
+         .join("")
     end
-    nil
+    puts render
   end
 
 end

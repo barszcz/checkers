@@ -7,21 +7,11 @@ class Piece
   end
 
   def perform_move(new_pos)
-    slide_moves = get_moves(slide_diffs)
-    jump_moves = get_moves(jump_diffs)
 
-    #reassignment so I don't screw with the indexes
-    jump_moves = jump_moves.select.with_index do |move, i|
-      jumped_piece = @board[slide_moves[i]]
-      jumped_piece && jumped_piece.color != color
-    end
-
-    if jump_moves.include?(new_pos) && @board.empty?(new_pos)
+    if jump_moves.include?(new_pos)
       perform_jump!(new_pos)
-
-    elsif slide_moves.include?(new_pos) && @board.empty?(new_pos)
+    elsif slide_moves.include?(new_pos)
       perform_slide!(new_pos)
-
     else
       return false
     end
@@ -30,78 +20,55 @@ class Piece
 
   end
 
-  def perform_slide!(new_pos)
-    @board.update(@pos, new_pos)
-    @pos = new_pos
+  def king
+    @king = true
   end
-
-  def perform_jump!(new_pos)
-    #kind of a crappy hack
-    jumped_pos = [pos, new_pos].transpose.map { |coords| coords.inject(:+) / 2 }
-
-    @board.update(@pos, new_pos)
-    @board.capture(jumped_pos)
-    @pos = new_pos
-  end
-
-  # def perform_slide(new_pos)
-  #   diffs = slide_diffs
-  #
-  #   moves = diffs.map do |diff|
-  #     [diff[0] + pos[0], diff[1] + pos[1]]
-  #   end
-  #
-  #   moves.select! do |move|
-  #     move.all? { |coord| coord.between?(0, 7) } &&
-  #     board[move].nil?
-  #   end
-  #
-  #   return false unless moves.include?(new_pos)
-  #
-  #   @board.update(@pos, new_pos)
-  #   @pos = new_pos
-  #   true
-  # end
-  #
-  # def perform_jump
-  #   diffs = jump_diffs
-  #
-  #   moves = diffs.map do |diff|
-  #     [diff[0] + pos[0], diff[1] + pos[1]]
-  #   end
-  #
-  #   moves.select! do |move|
-  #     move.all? { |coord| coord.between?(0, 7) } &&
-  #     board[move].nil?
-  #   end
-  #
-  #   return false unless moves.include?(new_pos)
-  #
-  #   @board.update(@pos, new_pos)
-  #   @pos = new_pos
-  #
-  # end
-
 
   def is_king?
     @king
   end
 
   def render
-    if is_king?
-      @color == :red ? "R" : "B"
-    else
-      @color == :red ? "r" : "b"
-    end
+    c = is_king? ? "♚" : "●"
+    @color == :red ? c.colorize(:red) : c
   end
 
   private
 
+  def perform_slide!(new_pos)
+    @board.update(@pos, new_pos)
+    @pos = new_pos
+  end
+
+  def perform_jump!(new_pos)
+    @board.update(@pos, new_pos)
+    @board.capture(jumped_pos(new_pos))
+    @pos = new_pos
+  end
+
+  def slide_moves
+    get_moves(slide_diffs)
+  end
+
+  def jump_moves
+    jump_moves = get_moves(jump_diffs)
+    jump_moves.select! do |move|
+      jumped_piece = @board[jumped_pos(move)]
+      jumped_piece && jumped_piece.color != color
+    end
+    jump_moves
+  end
+
+  def jumped_pos(move)
+    # lol
+    [pos, move].transpose.map { |coords| coords.inject(:+) / 2 }
+  end
+
   def get_moves(diffs)
     moves = diffs.map { |diff| [diff[0] + pos[0], diff[1] + pos[1]] }
     moves.select do |move|
-      move.all? { |coord| coord.between?(0, 7) } # &&
-      #board[move].nil?
+      move.all? { |coord| coord.between?(0, 7) } &&
+      @board.empty?(move)
     end
   end
 
@@ -125,25 +92,9 @@ class Piece
   end
 
   def jump_diffs
-
     slide_diffs.map do |diff|
       diff.map { |coord| coord * 2 }
     end
-  #   red_jump_diffs = [
-  #     [2, -2],
-  #     [2, 2]
-  #   ]
-  #
-  #   black_jump_diffs = [
-  #     [-2, -2],
-  #     [-2, 2]
-  #   ]
-  #
-  #   if is_king?
-  #     red_jump_diffs + black_jump-diffs
-  #   else
-  #     color == :red ? red_slide_diffs : black_slide_diffs
-  #   end
-   end
+  end
 
 end
