@@ -20,9 +20,25 @@ class Piece
   end
 
   def perform_moves(*seq)
-    valid_move_seq?(*seq) ? perform_moves!(*seq) : (raise InvalidMoveError.new "Invalid move sequence!")
+    if valid_move_seq?(*seq)
+      perform_moves!(*seq)
+    else
+      (raise InvalidMoveError.new "Invalid move sequence!")
+    end
   end
 
+  protected
+
+  def perform_moves!(*seq)
+    if seq.length == 1
+      perform_move(seq.first) || (raise InvalidMoveError.new "Invalid move!")
+    else
+      seq.each do |move|
+        perform_jump(move) || (raise InvalidMoveError.new "Invalid move!")
+      end
+      true
+    end
+  end
 
 
   private
@@ -47,17 +63,6 @@ class Piece
 
   def perform_move(new_pos)
     perform_jump(new_pos) || perform_slide(new_pos) || false
-  end
-
-  def perform_moves!(*seq)
-    if seq.length == 1
-      perform_move(seq.first) || (raise InvalidMoveError.new "Invalid move!")
-    else
-      seq.each do |move|
-        perform_jump(move) || (raise InvalidMoveError.new "Invalid move!")
-      end
-      true
-    end
   end
 
   def valid_move_seq?(*seq)
