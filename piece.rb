@@ -1,6 +1,6 @@
 class Piece
 
-  attr_reader :color
+  attr_reader :color, :pos
 
   def initialize(pos, color, board, king = false)
     @pos, @color, @board, @king = pos, color, board, king
@@ -16,10 +16,10 @@ class Piece
       jumped_piece && jumped_piece.color != color
     end
 
-    if jump_moves.include?(new_pos) && board.empty?(new_pos)
+    if jump_moves.include?(new_pos) && @board.empty?(new_pos)
       perform_jump!(new_pos)
 
-    elsif slide_moves.include?(new_pos) && board.empty?(new_pos)
+    elsif slide_moves.include?(new_pos) && @board.empty?(new_pos)
       perform_slide!(new_pos)
 
     else
@@ -83,10 +83,19 @@ class Piece
   # end
 
 
-
   def is_king?
     @king
   end
+
+  def render
+    if is_king?
+      @color == :red ? "R" : "B"
+    else
+      @color == :red ? "r" : "b"
+    end
+  end
+
+  private
 
   def get_moves(diffs)
     moves = diffs.map { |diff| [diff[0] + pos[0], diff[1] + pos[1]] }
