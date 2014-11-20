@@ -5,8 +5,8 @@ require_relative 'board'
 
 class CheckersGame
 
-  def initialize
-    @game_board = Board.new
+  def initialize(game_board = Board.new)
+    @game_board = game_board
   end
 
   def play
@@ -26,6 +26,8 @@ class CheckersGame
     end
 
   end
+
+  private
 
   def play_turn(color)
 
@@ -58,14 +60,13 @@ class CheckersGame
     king_row = color == :red ? 7 : 0
     @game_board.pieces(color).select do |piece|
       piece.pos.first == king_row
-    end.map(&:king_me)
+    end.each(&:king_me)
   end
 
   def lost?(color)
     @game_board.pieces(color).empty?
   end
 
-  private
 
   def parse_moves(input)
 

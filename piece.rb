@@ -19,6 +19,14 @@ class Piece
     @color == :red ? c.colorize(:red) : c
   end
 
+  def perform_moves(*seq)
+    valid_move_seq?(*seq) ? perform_moves!(*seq) : (raise InvalidMoveError.new "Invalid move sequence!")
+  end
+
+
+
+  private
+
   def perform_jump(new_pos)
     if jump_moves.include?(new_pos)
       perform_jump!(new_pos)
@@ -63,12 +71,6 @@ class Piece
     end
   end
 
-  def perform_moves(*seq)
-    valid_move_seq?(*seq) ? perform_moves!(*seq) : (raise InvalidMoveError.new "Invalid move sequence!")
-  end
-
-  private
-
   def perform_slide!(new_pos)
     @board.update(@pos, new_pos)
     @pos = new_pos
@@ -101,7 +103,7 @@ class Piece
   def get_moves(diffs)
     moves = diffs.map { |diff| [diff[0] + pos[0], diff[1] + pos[1]] }
     moves.select do |move|
-      move.all? { |coord| coord.between?(0, 7) } &&
+      @board.is_on_board?(move) &&
       @board.empty?(move)
     end
   end
