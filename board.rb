@@ -7,6 +7,7 @@ class Board
 
   def [](pos)
     row, col = pos
+    # p pos
     @grid[row][col]
   end
 
@@ -15,8 +16,8 @@ class Board
     @grid[row][col] = value
   end
 
-  def pieces
-    @grid.flatten.compact
+  def pieces(color = nil)
+    @grid.flatten.compact.select { |piece| color.nil? ? true : piece.color == color}
   end
 
   def dup
@@ -56,14 +57,17 @@ class Board
   end
 
   def render
+    cols = ("  A  B  C  D  E  F  G  H ")
     render = @grid.map.with_index do |row, i|
+      rank = (i + 1).to_s
       row.map.with_index do |space, j|
-        bg_color = (i.even? ^ j.even?) ? :green : :default
-        piece = space ? space.render : " "
+        bg_color = (i.even? ^ j.even?) ? :default : :white
+        piece = space ? space.render : "   "
         piece.colorize(background: bg_color)
       end
-         .join("")
-    end
+         .join("").concat(rank).prepend(rank)
+    end.unshift(cols)
+       .push(cols)
     puts render
   end
 

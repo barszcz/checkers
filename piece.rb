@@ -6,7 +6,7 @@ class Piece
     @pos, @color, @board, @king = pos, color, board, king
   end
 
-  def king
+  def king_me
     @king = true
   end
 
@@ -15,7 +15,7 @@ class Piece
   end
 
   def render
-    c = is_king? ? "♚" : "●"
+    c = is_king? ? " ♚ " : " ● "
     @color == :red ? c.colorize(:red) : c
   end
 
@@ -43,10 +43,10 @@ class Piece
 
   def perform_moves!(*seq)
     if seq.length == 1
-      perform_move(seq.first) || (raise InvalidMoveError)
+      perform_move(seq.first) || (raise InvalidMoveError.new "Invalid move!")
     else
       seq.each do |move|
-        perform_jump(move) || (raise InvalidMoveError)
+        perform_jump(move) || (raise InvalidMoveError.new "Invalid move!")
       end
       true
     end
@@ -64,7 +64,7 @@ class Piece
   end
 
   def perform_moves(*seq)
-    valid_move_seq?(*seq) ? perform_moves!(*seq) : (raise InvalidMoveError)
+    valid_move_seq?(*seq) ? perform_moves!(*seq) : (raise InvalidMoveError.new "Invalid move sequence!")
   end
 
   private
