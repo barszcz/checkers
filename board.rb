@@ -3,7 +3,7 @@ require 'colorize'
 
 class Board
 
-  attr_accessor :grid
+#  attr_accessor :grid
 
   def [](pos)
     row, col = pos
@@ -13,6 +13,19 @@ class Board
   def []=(pos, value)
     row, col = pos
     @grid[row][col] = value
+  end
+
+  def pieces
+    @grid.flatten.compact
+  end
+
+  def dup
+    dup = Board.new(false)
+    pieces.each do |piece|
+      pos = piece.pos.dup
+      dup[pos] = Piece.new(pos, piece.color, dup, piece.is_king?)
+    end
+    dup
   end
 
   def initialize(start = true)

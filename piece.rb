@@ -6,20 +6,6 @@ class Piece
     @pos, @color, @board, @king = pos, color, board, king
   end
 
-  def perform_move(new_pos)
-
-    if jump_moves.include?(new_pos)
-      perform_jump!(new_pos)
-    elsif slide_moves.include?(new_pos)
-      perform_slide!(new_pos)
-    else
-      return false
-    end
-
-    true
-
-  end
-
   def king
     @king = true
   end
@@ -31,6 +17,54 @@ class Piece
   def render
     c = is_king? ? "♚" : "●"
     @color == :red ? c.colorize(:red) : c
+  end
+
+  def perform_jump(new_pos)
+    if jump_moves.include?(new_pos)
+      perform_jump!(new_pos)
+      true
+    else
+      false
+    end
+  end
+
+  def perform_slide(new_pos)
+    if slide_moves.include?(new_pos)
+      perform_slide!(new_pos)
+      true
+    else
+      false
+    end
+  end
+
+  def perform_move(new_pos)
+    perform_jump(new_pos) || perform_slide(new_pos) || false
+  end
+
+  def perform_moves!(*seq)
+    if seq.length == 1
+      perform_move(seq.first) || (raise InvalidMoveError)
+    else
+      seq.each do |move|
+        perform_jump(move) || (raise InvalidMoveError)
+      end
+      true
+    end
+  end
+
+  def valid_move_seq?(*seq)
+    test_board = @board.dup
+    begin
+      test_board[pos].perform_moves!(*seq)
+    rescue InvalidMoveError
+      false
+    else
+      true
+    end
+  end
+
+  def perform_moves(*seq)
+    valid_move_seq?(*seq) ? perform_moves!(*seq) : (raise InvalidMoveError)
   end
 
   private
